@@ -11,7 +11,7 @@ st.set_page_config(page_title="Sales EDA Dashboard", layout="wide")
 st.title("📊 Sales Data EDA Dashboard")
 
 # File uploader
-uploaded_file = st.file_uploader("Φόρτωσε το αρχείο σου CSV", type=["csv"])
+uploaded_file = st.file_uploader("📥 Φόρτωσε το αρχείο σου (CSV με πωλήσεις)", type=["csv"])
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
@@ -147,4 +147,28 @@ if uploaded_file is not None:
         st.download_button("Download Pivot Table", data=csv_pivot, file_name="pivot_table.csv", mime='text/csv')
 
 else:
-    st.info("👆 Παρακαλώ φόρτωσε το αρχείο σου CSV για να ξεκινήσει η ανάλυση.")
+    st.image("https://cdn-icons-png.flaticon.com/512/3081/3081559.png", width=100)
+    st.markdown("""
+    ### 👋 Καλώς ήρθες στο Sales EDA Dashboard
+    Ανέβασε ένα CSV αρχείο με τα δεδομένα πωλήσεών σου για να ξεκινήσεις ανάλυση.
+
+    **📌 Το αρχείο πρέπει να περιέχει στήλες όπως:**
+    - `Order Date`
+    - `Product`
+    - `Quantity Ordered`
+    - `Price Each`
+    - `City`
+
+    *Προαιρετικά:* `Customer ID`, `Category`, `Region`, `Order ID`
+
+    Μπορείς να κατεβάσεις ένα δείγμα για να δεις το format:
+    """)
+    sample_data = pd.DataFrame({
+        'Order Date': ['2024-01-10', '2024-01-15'],
+        'Product': ['USB-C Cable', 'iPhone'],
+        'Quantity Ordered': [2, 1],
+        'Price Each': [11.95, 699.00],
+        'City': ['San Francisco', 'New York']
+    })
+    sample_csv = sample_data.to_csv(index=False).encode('utf-8')
+    st.download_button("📥 Download Sample CSV", data=sample_csv, file_name="sample_sales_data.csv", mime='text/csv')
