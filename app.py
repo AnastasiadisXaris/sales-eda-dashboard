@@ -11,7 +11,7 @@ st.set_page_config(page_title="Sales EDA Dashboard", layout="wide")
 st.title("📊 Sales Data EDA Dashboard")
 
 # File uploader
-uploaded_file = st.file_uploader("Φόρτωση αρχείου CSV ", type=["csv"])
+uploaded_file = st.file_uploader("Φόρτωσε το αρχείο σου CSV", type=["csv"])
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
@@ -73,30 +73,46 @@ if uploaded_file is not None:
     # Monthly Sales
     if 'Month' in df.columns and 'Total Sales' in df.columns:
         st.subheader("🗓️ Monthly Sales")
+        chart_type = st.selectbox("Chart Type for Monthly Sales", ['Bar', 'Line', 'Pie'], key='monthly')
         monthly_sales = df.groupby('Month')['Total Sales'].sum().reset_index()
+
         fig, ax = plt.subplots()
-        sns.barplot(data=monthly_sales, x='Month', y='Total Sales', palette='Blues_d', ax=ax)
-        ax.set_title("Monthly Sales")
+        if chart_type == 'Bar':
+            sns.barplot(data=monthly_sales, x='Month', y='Total Sales', palette='Blues_d', ax=ax)
+        elif chart_type == 'Line':
+            ax.plot(monthly_sales['Month'], monthly_sales['Total Sales'], marker='o')
+        elif chart_type == 'Pie':
+            ax.pie(monthly_sales['Total Sales'], labels=monthly_sales['Month'], autopct='%1.1f%%')
         st.pyplot(fig)
 
     # Top Products
     if 'Product' in df.columns and 'Quantity Ordered' in df.columns:
         st.subheader("📦 Top Selling Products")
+        chart_type = st.selectbox("Chart Type for Top Products", ['Bar', 'Line', 'Pie'], key='top_products')
         top_products = df.groupby('Product')['Quantity Ordered'].sum().sort_values(ascending=False).head(10)
+
         fig, ax = plt.subplots(figsize=(10, 4))
-        top_products.plot(kind='bar', ax=ax, color='orange')
-        ax.set_title("Top 10 Products")
-        plt.xticks(rotation=45)
+        if chart_type == 'Bar':
+            top_products.plot(kind='bar', ax=ax, color='orange')
+        elif chart_type == 'Line':
+            top_products.plot(ax=ax, marker='o', color='orange')
+        elif chart_type == 'Pie':
+            ax.pie(top_products.values, labels=top_products.index, autopct='%1.1f%%')
         st.pyplot(fig)
 
     # Sales by City
     if 'City' in df.columns:
         st.subheader("🏙️ Sales by City")
+        chart_type = st.selectbox("Chart Type for City Sales", ['Bar', 'Line', 'Pie'], key='city_sales')
         city_sales = df.groupby('City')['Total Sales'].sum().sort_values(ascending=False)
+
         fig, ax = plt.subplots(figsize=(10, 4))
-        city_sales.plot(kind='bar', ax=ax, color='teal')
-        ax.set_title("Sales by City")
-        plt.xticks(rotation=45)
+        if chart_type == 'Bar':
+            city_sales.plot(kind='bar', ax=ax, color='teal')
+        elif chart_type == 'Line':
+            city_sales.plot(ax=ax, marker='o', color='teal')
+        elif chart_type == 'Pie':
+            ax.pie(city_sales.values, labels=city_sales.index, autopct='%1.1f%%')
         st.pyplot(fig)
 
     # Time Series Analysis
@@ -118,5 +134,17 @@ if uploaded_file is not None:
     sns.heatmap(corr, annot=True, cmap='coolwarm', ax=ax)
     st.pyplot(fig)
 
+    # Pivot Analysis
+    st.subheader("📊 Pivot Table Analysis")
+    group_col = st.selectbox("Group by:", options=df.columns, index=0)
+    agg_col = st.selectbox("Aggregate column:", options=numeric_df.columns, index=0)
+    agg_func = st.selectbox("Aggregation function:", options=['sum', 'mean', 'count', 'max', 'min'], index=0)
+
+    if group_col and agg_col and agg_func:
+        pivot_table = df.groupby(group_col)[agg_col].agg(agg_func).reset_index()
+        st.dataframe(pivot_table)
+        csv_pivot = pivot_table.to_csv(index=False).encode('utf-8')
+        st.download_button("Download Pivot Table", data=csv_pivot, file_name="pivot_table.csv", mime='text/csv')
+
 else:
-    st.info("👆 Παρακάλω φόρτωσετο αρχείο CSV file για να ξεκινήσει η ανάλυση.")
+    st.info("👆 Παρακαλώ φόρτωσε το αρχείο σου CSV για να ξεκινήσει η ανάλυση.")
