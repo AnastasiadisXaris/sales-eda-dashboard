@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from io import BytesIO
 
 # Set Seaborn style
 sns.set(style="whitegrid")
@@ -10,13 +11,10 @@ st.set_page_config(page_title="Sales EDA Dashboard", layout="wide")
 st.title("📊 Sales Data EDA Dashboard")
 
 # File uploader
-uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
+uploaded_file = st.file_uploader("Φόρτωση αρχείου CSV ", type=["csv"])
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
-    
-    st.subheader("📄 Raw Data")
-    st.dataframe(df.head())
 
     # Data Preprocessing
     with st.spinner("Cleaning data..."):
@@ -33,21 +31,52 @@ if uploaded_file is not None:
         if 'Quantity Ordered' in df.columns and 'Price Each' in df.columns:
             df['Total Sales'] = df['Quantity Ordered'] * df['Price Each']
 
-    st.subheader("📊 Summary Statistics")
-    st.write(df.describe())
-
     # Sidebar filters
-    st.sidebar.header("Filters")
+    st.sidebar.header("📌 Filters")
+
     if 'Year' in df.columns:
-        selected_year = st.sidebar.selectbox("Select Year", sorted(df['Year'].dropna().unique()))
-        df = df[df['Year'] == selected_year]
+        year = st.sidebar.selectbox("Select Year", sorted(df['Year'].unique()))
+        df = df[df['Year'] == year]
+
+    if 'Product' in df.columns:
+        products = st.sidebar.multiselect("Select Products", options=df['Product'].unique(), default=df['Product'].unique())
+        df = df[df['Product'].isin(products)]
+
+    if 'City' in df.columns:
+        cities = st.sidebar.multiselect("Select Cities", options=df['City'].unique(), default=df['City'].unique())
+        df = df[df['City'].isin(cities)]
+
+    if 'Order Date' in df.columns:
+        min_date = df['Order Date'].min()
+        max_date = df['Order Date'].max()
+        date_range = st.sidebar.date_input("Select Date Range", [min_date, max_date], min_value=min_date, max_value=max_date)
+        if len(date_range) == 2:
+            df = df[(df['Order Date'] >= pd.to_datetime(date_range[0])) & (df['Order Date'] <= pd.to_datetime(date_range[1]))]
+
+    # KPI Cards
+    st.subheader("📌 Key Performance Indicators")
+    total_sales = df['Total Sales'].sum() if 'Total Sales' in df.columns else 0
+    total_orders = len(df)
+    avg_order_value = total_sales / total_orders if total_orders else 0
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Sales", f"${total_sales:,.2f}")
+    col2.metric("Total Orders", f"{total_orders}")
+    col3.metric("Avg. Order Value", f"${avg_order_value:,.2f}")
+
+    # Raw Data
+    with st.expander("📄 Show Raw Data"):
+        st.dataframe(df.head(100))
+        csv = df.to_csv(index=False).encode('utf-8')
+        st.download_button("Download Filtered Data", data=csv, file_name="filtered_sales_data.csv", mime='text/csv')
 
     # Monthly Sales
     if 'Month' in df.columns and 'Total Sales' in df.columns:
         st.subheader("🗓️ Monthly Sales")
         monthly_sales = df.groupby('Month')['Total Sales'].sum().reset_index()
         fig, ax = plt.subplots()
-        sns.barplot(data=monthly_sales, x='Month', y='Total Sales', ax=ax)
+        sns.barplot(data=monthly_sales, x='Month', y='Total Sales', palette='Blues_d', ax=ax)
+        ax.set_title("Monthly Sales")
         st.pyplot(fig)
 
     # Top Products
@@ -55,7 +84,8 @@ if uploaded_file is not None:
         st.subheader("📦 Top Selling Products")
         top_products = df.groupby('Product')['Quantity Ordered'].sum().sort_values(ascending=False).head(10)
         fig, ax = plt.subplots(figsize=(10, 4))
-        top_products.plot(kind='bar', ax=ax)
+        top_products.plot(kind='bar', ax=ax, color='orange')
+        ax.set_title("Top 10 Products")
         plt.xticks(rotation=45)
         st.pyplot(fig)
 
@@ -65,6 +95,7 @@ if uploaded_file is not None:
         city_sales = df.groupby('City')['Total Sales'].sum().sort_values(ascending=False)
         fig, ax = plt.subplots(figsize=(10, 4))
         city_sales.plot(kind='bar', ax=ax, color='teal')
+        ax.set_title("Sales by City")
         plt.xticks(rotation=45)
         st.pyplot(fig)
 
@@ -74,8 +105,9 @@ if uploaded_file is not None:
         daily_sales = df.groupby('Order Date')['Total Sales'].sum()
         fig, ax = plt.subplots(figsize=(14, 4))
         daily_sales.plot(ax=ax)
-        plt.ylabel("Total Sales")
-        plt.xlabel("Date")
+        ax.set_ylabel("Total Sales")
+        ax.set_xlabel("Date")
+        ax.set_title("Daily Sales")
         st.pyplot(fig)
 
     # Correlation Heatmap
@@ -87,4 +119,4 @@ if uploaded_file is not None:
     st.pyplot(fig)
 
 else:
-    st.info("👆 Please upload a CSV file to begin analysis.")
+    st.info("👆 Παρακάλω φόρτωσετο αρχείο CSV file για να ξεκινήσει η ανάλυση.")
