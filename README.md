@@ -1,30 +1,55 @@
-# sales-eda-dashboard
-# 📊 Sales Data EDA Dashboard
+# 📊 Sales EDA Dashboard
 
-An interactive Streamlit dashboard that allows you to upload and explore your own sales data through visual analytics and automated insights.
+![Python](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+![Streamlit](https://img.shields.io/badge/Built%20With-Streamlit-ff4b4b?logo=streamlit)
+![Status](https://img.shields.io/badge/Status-Active-brightgreen)
 
-## 🚀 Features
+Ένα διαδραστικό dashboard για Εξερευνητική Ανάλυση Δεδομένων (EDA) πωλήσεων. Ιδανικό για επιχειρηματική ανάλυση, data storytelling, παρακολούθηση απόδοσης και υποστήριξη αποφάσεων με οπτικοποιημένα δεδομένα.
 
-- Upload your own CSV file with sales data
-- Clean and preprocess the data automatically
-- View sales trends by month, product, city
-- Correlation heatmaps for numeric variables
-- Time series analysis of sales over time
+---
 
-## 📁 Sample CSV Format
+## ✨ Βασικά Χαρακτηριστικά
 
-Your CSV file should include columns like:
-- `Order Date` (e.g., 2023-01-15)
-- `Product`
-- `Quantity Ordered`
-- `Price Each`
-- `City` (optional)
+- Διαδραστικά γραφήματα πωλήσεων (χρονικά, γεωγραφικά, ανά προϊόν/κατηγορία)
+- Υπολογισμός KPIs: συνολικές πωλήσεις, μέσο έσοδο ανά συναλλαγή, ποσοστά ανάπτυξης
+- Φιλτράρισμα ανά ημερομηνία, περιοχή, προϊόν, κ.ά.
+- Καθαρισμός και ανάλυση δεδομένων με Python (pandas, plotly)
+- Web-based dashboard με χρήση Streamlit ή Dash
 
-## 🛠 How to Run Locally
+---
+
+## 📸 Screenshots
+
+<!-- Ανέβασε εικόνες στο repo και ενημέρωσε τα links -->
+![screenshot1](assets/screenshot1.png)
+*Αρχική προβολή με KPI cards και χρονική ανάλυση.*
+
+![screenshot2](assets/screenshot2.png)
+*Γραφήματα ανά κατηγορία προϊόντος και περιοχή.*
+
+---
+
+## 🛠️ Τεχνολογίες
+
+- Python 3.9+
+- [Pandas](https://pandas.pydata.org/)
+- [Plotly](https://plotly.com/)
+- [Streamlit](https://streamlit.io/) ή Dash (ανάλογα με την έκδοση)
+- Jupyter Notebooks για EDA
+
+---
+
+## 📁 Δομή Αποθετηρίου
 
 ```bash
-git clone https://github.com/your-username/sales-eda-dashboard.git
-cd sales-eda-dashboard
-pip install -r requirements.txt
-streamlit run app.py
+sales-eda-dashboard/
+│
+├── data/                 # Δεδομένα (raw και processed)
+├── notebooks/            # Jupyter notebooks για EDA
+├── dashboard/            # Κώδικας εφαρμογής dashboard
+├── assets/               # Εικόνες και βοηθητικά αρχεία
+├── requirements.txt      # Βιβλιοθήκες για εγκατάσταση
+└── README.md             # Τεκμηρίωση έργου
+
 
