@@ -7,11 +7,14 @@ from io import BytesIO
 # Set Seaborn style
 sns.set(style="whitegrid")
 
+# Currency conversion rate
+GBP_TO_EUR = 1.15
+
 st.set_page_config(page_title="Sales EDA Dashboard", layout="wide")
-st.title("📊 Sales Data EDA Dashboard")
+st.title("\U0001F4CA Sales Data EDA Dashboard")
 
 # File uploader
-uploaded_file = st.file_uploader("📥 Φόρτωσε το αρχείο σου (CSV με πωλήσεις)", type=["csv"])
+uploaded_file = st.file_uploader("\U0001F4E5 Φόρτωσε το αρχείο σου (CSV με πωλήσεις)", type=["csv"])
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
@@ -29,10 +32,11 @@ if uploaded_file is not None:
             df['Day'] = df['Order Date'].dt.day_name()
 
         if 'Quantity Ordered' in df.columns and 'Price Each' in df.columns:
-            df['Total Sales'] = df['Quantity Ordered'] * df['Price Each']
+            df['Total Sales (GBP)'] = df['Quantity Ordered'] * df['Price Each']
+            df['Total Sales (€)'] = df['Total Sales (GBP)'] * GBP_TO_EUR
 
     # Sidebar filters
-    st.sidebar.header("📌 Filters")
+    st.sidebar.header("\U0001F4CC Filters")
 
     if 'Year' in df.columns:
         year = st.sidebar.selectbox("Select Year", sorted(df['Year'].unique()))
@@ -54,35 +58,35 @@ if uploaded_file is not None:
             df = df[(df['Order Date'] >= pd.to_datetime(date_range[0])) & (df['Order Date'] <= pd.to_datetime(date_range[1]))]
 
     # KPI Cards
-    st.subheader("📌 Key Performance Indicators")
-    total_sales = df['Total Sales'].sum() if 'Total Sales' in df.columns else 0
+    st.subheader("\U0001F4CC Key Performance Indicators")
+    total_sales = df['Total Sales (€)'].sum() if 'Total Sales (€)' in df.columns else 0
     total_orders = len(df)
     avg_order_value = total_sales / total_orders if total_orders else 0
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Total Sales", f"${total_sales:,.2f}")
+    col1.metric("Total Sales", f"€{total_sales:,.2f}")
     col2.metric("Total Orders", f"{total_orders}")
-    col3.metric("Avg. Order Value", f"${avg_order_value:,.2f}")
+    col3.metric("Avg. Order Value", f"€{avg_order_value:,.2f}")
 
     # Raw Data
-    with st.expander("📄 Show Raw Data"):
+    with st.expander("\U0001F4C4 Show Raw Data"):
         st.dataframe(df.head(100))
         csv = df.to_csv(index=False).encode('utf-8')
         st.download_button("Download Filtered Data", data=csv, file_name="filtered_sales_data.csv", mime='text/csv')
 
     # Monthly Sales
-    if 'Month' in df.columns and 'Total Sales' in df.columns:
+    if 'Month' in df.columns and 'Total Sales (€)' in df.columns:
         st.subheader("🗓️ Monthly Sales")
         chart_type = st.selectbox("Chart Type for Monthly Sales", ['Bar', 'Line', 'Pie'], key='monthly')
-        monthly_sales = df.groupby('Month')['Total Sales'].sum().reset_index()
+        monthly_sales = df.groupby('Month')['Total Sales (€)'].sum().reset_index()
 
         fig, ax = plt.subplots()
         if chart_type == 'Bar':
-            sns.barplot(data=monthly_sales, x='Month', y='Total Sales', palette='Blues_d', ax=ax)
+            sns.barplot(data=monthly_sales, x='Month', y='Total Sales (€)', palette='Blues_d', ax=ax)
         elif chart_type == 'Line':
-            ax.plot(monthly_sales['Month'], monthly_sales['Total Sales'], marker='o')
+            ax.plot(monthly_sales['Month'], monthly_sales['Total Sales (€)'], marker='o')
         elif chart_type == 'Pie':
-            ax.pie(monthly_sales['Total Sales'], labels=monthly_sales['Month'], autopct='%1.1f%%')
+            ax.pie(monthly_sales['Total Sales (€)'], labels=monthly_sales['Month'], autopct='%1.1f%%')
         st.pyplot(fig)
 
     # Top Products
@@ -102,9 +106,9 @@ if uploaded_file is not None:
 
     # Sales by City
     if 'City' in df.columns:
-        st.subheader("🏙️ Sales by City")
+        st.subheader("🌍 Sales by City")
         chart_type = st.selectbox("Chart Type for City Sales", ['Bar', 'Line', 'Pie'], key='city_sales')
-        city_sales = df.groupby('City')['Total Sales'].sum().sort_values(ascending=False)
+        city_sales = df.groupby('City')['Total Sales (€)'].sum().sort_values(ascending=False)
 
         fig, ax = plt.subplots(figsize=(10, 4))
         if chart_type == 'Bar':
@@ -116,12 +120,12 @@ if uploaded_file is not None:
         st.pyplot(fig)
 
     # Time Series Analysis
-    if 'Order Date' in df.columns and 'Total Sales' in df.columns:
+    if 'Order Date' in df.columns and 'Total Sales (€)' in df.columns:
         st.subheader("📈 Sales Over Time")
-        daily_sales = df.groupby('Order Date')['Total Sales'].sum()
+        daily_sales = df.groupby('Order Date')['Total Sales (€)'].sum()
         fig, ax = plt.subplots(figsize=(14, 4))
         daily_sales.plot(ax=ax)
-        ax.set_ylabel("Total Sales")
+        ax.set_ylabel("Total Sales (€)")
         ax.set_xlabel("Date")
         ax.set_title("Daily Sales")
         st.pyplot(fig)
@@ -150,7 +154,7 @@ else:
     st.image("https://cdn-icons-png.flaticon.com/512/3081/3081559.png", width=100)
     st.markdown("""
     ### 👋 Καλώς ήρθες στο Sales EDA Dashboard
-    Ανέβασε ένα CSV αρχείο με τα δεδομένα πωλήσεών σου για να ξεκινήσεις ανάλυση.
+    Ανέβασε ένα CSV αρχείο με τα δεδομένα πωλήσεων σου για να ξεκινήσεις ανάλυση.
 
     **📌 Το αρχείο πρέπει να περιέχει στήλες όπως:**
     - `Order Date`
@@ -171,4 +175,4 @@ else:
         'City': ['San Francisco', 'New York']
     })
     sample_csv = sample_data.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Download Sample CSV", data=sample_csv, file_name="sample_sales_data.csv", mime='text/csv')
+    st.download_button("\U0001F4E5 Download Sample CSV", data=sample_csv, file_name="sample_sales_data.csv", mime='text/csv')
