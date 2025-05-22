@@ -44,12 +44,10 @@
 
 ```bash
 sales-eda-dashboard/
-│
-├── data/                 # Δεδομένα (raw και processed)
-├── notebooks/            # Jupyter notebooks για EDA
-├── dashboard/            # Κώδικας εφαρμογής dashboard
-├── assets/               # Εικόνες και βοηθητικά αρχεία
-├── requirements.txt      # Βιβλιοθήκες για εγκατάσταση
-└── README.md             # Τεκμηρίωση έργου
+├── app.py
+├── requirements.txt
+├── example_sales.csv
+└── README.md
+
 
 
